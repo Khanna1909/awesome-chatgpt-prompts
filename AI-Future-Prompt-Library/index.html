@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AI Future Prompt Library: библиотека профессиональных промптов для инфографики, визуала и обучения." />
+  <title>AI Future Prompt Library</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="hero">
+    <nav class="nav">
+      <div class="brand">AI Future <span>Prompt Library</span></div>
+      <button class="theme" id="themeBtn" type="button">Сменить тему</button>
+    </nav>
+
+    <section class="hero-grid">
+      <div>
+        <p class="eyebrow">Инфографика • AI-визуал • Обучение</p>
+        <h1>50 профессиональных промптов для потрясающих инфографик</h1>
+        <p class="lead">Готовая библиотека стилей: от bento-grid и editorial-дизайна до научных схем, музейных атласов и футуристических AI-интерфейсов. Меняете тему, копируете промпт, генерируете визуал. Без ритуальных плясок вокруг кнопки Generate.</p>
+        <div class="hero-actions">
+          <a class="primary" href="#library">Открыть библиотеку</a>
+          <a class="secondary" href="#how">Как использовать</a>
+        </div>
+      </div>
+      <aside class="hero-card">
+        <div class="orb"></div>
+        <p class="card-label">Внутри</p>
+        <strong>5 категорий</strong>
+        <span>Современные, научные, образовательные, художественные и футуристические стили</span>
+      </aside>
+    </section>
+  </header>
+
+  <main>
+    <section class="section" id="how">
+      <div class="section-head">
+        <p class="eyebrow">Как пользоваться</p>
+        <h2>Три шага, потому что сложнее тут делать нечего</h2>
+      </div>
+      <div class="steps">
+        <article><b>01</b><h3>Выберите стиль</h3><p>Найдите визуальный формат под задачу: обучение, бизнес, наука, маркетинг или футуризм.</p></article>
+        <article><b>02</b><h3>Замените [ТЕМА]</h3><p>Вставьте свою тему, формат и при необходимости данные. Чем точнее вход, тем меньше модель изображает творческую амнезию.</p></article>
+        <article><b>03</b><h3>Скопируйте промпт</h3><p>Используйте его в ChatGPT Images, Flux, Ideogram, Midjourney, Seedream или другой модели генерации изображений.</p></article>
+      </div>
+    </section>
+
+    <section class="section library" id="library">
+      <div class="section-head sticky-head">
+        <div>
+          <p class="eyebrow">Библиотека</p>
+          <h2>Все стили инфографики</h2>
+        </div>
+        <input id="search" class="search" type="search" placeholder="Найти стиль, тему или назначение" />
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <dialog id="modal" class="modal">
+    <button class="close" id="closeModal" type="button">×</button>
+    <p class="eyebrow" id="modalCategory"></p>
+    <h2 id="modalTitle"></h2>
+    <p class="modal-sub" id="modalSubtitle"></p>
+    <div class="modal-meta">
+      <p><b>Когда использовать:</b> <span id="modalUse"></span></p>
+      <p><b>Визуальный принцип:</b> <span id="modalVisual"></span></p>
+    </div>
+    <button class="copy" id="copyPrompt" type="button">Скопировать промпт</button>
+    <pre id="promptText"></pre>
+  </dialog>
+
+  <footer class="footer">
+    <p>AI Future Prompt Library • Khanna Imani</p>
+  </footer>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
