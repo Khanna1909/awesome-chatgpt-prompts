@@ -1,16 +1,7 @@
-const state = { prompts: [], category: 'Все', query: '', current: null };
+const state = { prompts: [], category: 'Все', query: '' };
 const grid = document.querySelector('#grid');
 const filters = document.querySelector('#filters');
 const search = document.querySelector('#search');
-const modal = document.querySelector('#modal');
-const modalCategory = document.querySelector('#modalCategory');
-const modalTitle = document.querySelector('#modalTitle');
-const modalSubtitle = document.querySelector('#modalSubtitle');
-const modalUse = document.querySelector('#modalUse');
-const modalVisual = document.querySelector('#modalVisual');
-const promptText = document.querySelector('#promptText');
-const copyPrompt = document.querySelector('#copyPrompt');
-const closeModal = document.querySelector('#closeModal');
 const themeBtn = document.querySelector('#themeBtn');
 
 function createPrompt(item) {
@@ -32,7 +23,7 @@ function createPrompt(item) {
 }
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"]/g, symbol => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[symbol]));
+  return String(value).replace(/[&<>\"]/g, symbol => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[symbol]));
 }
 
 function buildFilters() {
@@ -55,66 +46,83 @@ function render() {
     return categoryOk && (!query || text.includes(query));
   });
 
-  grid.innerHTML = items.map(item => `
-    <article class="prompt-card">
-      <div class="topline"><span class="number">${String(item.id).padStart(2, '0')}</span><span>${escapeHtml(item.category)}</span></div>
-      <h3>${escapeHtml(item.title)}</h3>
-      <div class="subtitle">${escapeHtml(item.subtitle)}</div>
-      <p class="desc">${escapeHtml(item.use)}</p>
-      <button class="open" type="button" data-id="${item.id}">Открыть промпт</button>
-    </article>
-  `).join('') || '<p>Ничего не найдено. Даже алгоритм немного расстроился.</p>';
+  if (!items.length) {
+    grid.innerHTML = '<p class="empty">Ничего не найдено. Даже алгоритм немного приуныл.</p>';
+    return;
+  }
+
+  grid.innerHTML = items.map(item => {
+    const prompt = createPrompt(item);
+    return `
+      <article class="prompt-card" id="prompt-${item.id}">
+        <div class="topline"><span class="number">${String(item.id).padStart(2, '0')}</span><span>${escapeHtml(item.category)}</span></div>
+        <h3>${escapeHtml(item.title)}</h3>
+        <div class="subtitle">${escapeHtml(item.subtitle)}</div>
+        <p class="desc"><b>Когда использовать:</b> ${escapeHtml(item.use)}</p>
+        <p class="desc"><b>Визуальный принцип:</b> ${escapeHtml(item.visual)}</p>
+        <div class="card-actions">
+          <button class="open" type="button" data-id="${item.id}">Показать промпт</button>
+          <button class="copy-small" type="button" data-id="${item.id}">Скопировать</button>
+        </div>
+        <div class="prompt-panel" data-panel="${item.id}" hidden>
+          <pre>${escapeHtml(prompt)}</pre>
+        </div>
+      </article>
+    `;
+  }).join('');
 
   grid.querySelectorAll('.open').forEach(button => {
-    button.addEventListener('click', () => openPrompt(Number(button.dataset.id)));
+    button.addEventListener('click', () => togglePrompt(Number(button.dataset.id), button));
+  });
+
+  grid.querySelectorAll('.copy-small').forEach(button => {
+    button.addEventListener('click', () => copyById(Number(button.dataset.id), button));
   });
 }
 
-function openPrompt(id) {
+function togglePrompt(id, button) {
+  const panel = grid.querySelector(`[data-panel="${id}"]`);
+  if (!panel) return;
+  const isHidden = panel.hasAttribute('hidden');
+  if (isHidden) {
+    panel.removeAttribute('hidden');
+    button.textContent = 'Скрыть промпт';
+  } else {
+    panel.setAttribute('hidden', '');
+    button.textContent = 'Показать промпт';
+  }
+}
+
+async function copyById(id, button) {
   const item = state.prompts.find(prompt => prompt.id === id);
   if (!item) return;
-  state.current = item;
-  modalCategory.textContent = item.category;
-  modalTitle.textContent = item.title;
-  modalSubtitle.textContent = item.subtitle;
-  modalUse.textContent = item.use;
-  modalVisual.textContent = item.visual;
-  promptText.textContent = createPrompt(item);
-  copyPrompt.textContent = 'Скопировать промпт';
-  modal.showModal();
+  const text = createPrompt(item);
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = 'Скопировано';
+    setTimeout(() => button.textContent = 'Скопировать', 1300);
+  } catch (error) {
+    const panel = grid.querySelector(`[data-panel="${id}"]`);
+    if (panel) panel.removeAttribute('hidden');
+    button.textContent = 'Скопируйте вручную';
+  }
 }
 
 async function loadPrompts() {
   try {
-    const response = await fetch('data/prompts.json');
+    const response = await fetch('data/prompts.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error('JSON not loaded');
     state.prompts = await response.json();
     buildFilters();
     render();
   } catch (error) {
-    grid.innerHTML = '<p>Не удалось загрузить data/prompts.json. Открывайте проект через GitHub Pages или локальный сервер, а не как случайный файл из папки.</p>';
+    grid.innerHTML = '<p class="empty">Не удалось загрузить data/prompts.json. Откройте сайт через GitHub Pages, а не через просмотр файла на github.com/blob. Да, GitHub любит путать сайт и склад файлов, удивительно полезная традиция.</p>';
   }
 }
 
 search.addEventListener('input', event => {
   state.query = event.target.value;
   render();
-});
-
-copyPrompt.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(promptText.textContent);
-    copyPrompt.textContent = 'Скопировано';
-    setTimeout(() => copyPrompt.textContent = 'Скопировать промпт', 1200);
-  } catch (error) {
-    copyPrompt.textContent = 'Скопируйте вручную';
-  }
-});
-
-closeModal.addEventListener('click', () => modal.close());
-modal.addEventListener('click', event => {
-  const rect = modal.getBoundingClientRect();
-  const inDialog = rect.top <= event.clientY && event.clientY <= rect.bottom && rect.left <= event.clientX && event.clientX <= rect.right;
-  if (!inDialog) modal.close();
 });
 
 themeBtn.addEventListener('click', () => {
